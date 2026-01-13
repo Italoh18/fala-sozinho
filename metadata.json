@@ -1,0 +1,7 @@
+{
+  "name": "Fala Sozinho - Treino de Pressão Social",
+  "description": "Um simulador de situações sociais que utiliza a Gemini Live API para criar pressão realista, interrupções e silêncios constrangedores para treinar oratória e confiança.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
