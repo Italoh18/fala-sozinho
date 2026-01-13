@@ -24,6 +24,29 @@ export function useGeminiLive({ systemInstruction, onDisconnect }: UseGeminiLive
   // Transcript history for feedback
   const transcriptRef = useRef<{role: 'user' | 'model', text: string}[]>([]);
 
+  const disconnect = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (scriptProcessorRef.current) {
+        scriptProcessorRef.current.disconnect();
+        scriptProcessorRef.current = null;
+    }
+    if (inputAudioContextRef.current) {
+      inputAudioContextRef.current.close();
+      inputAudioContextRef.current = null;
+    }
+    if (outputAudioContextRef.current) {
+      outputAudioContextRef.current.close();
+      outputAudioContextRef.current = null;
+    }
+    
+    setIsConnected(false);
+    setIsTalking(false);
+    setVolume(0);
+  }, []);
+
   const connect = useCallback(async () => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -40,7 +63,7 @@ export function useGeminiLive({ systemInstruction, onDisconnect }: UseGeminiLive
       streamRef.current = stream;
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        model: 'gemini-2.0-flash-exp',
         callbacks: {
           onopen: () => {
             console.log('Gemini Live Connected');
@@ -149,32 +172,10 @@ export function useGeminiLive({ systemInstruction, onDisconnect }: UseGeminiLive
 
     } catch (error) {
       console.error("Failed to connect:", error);
-      setIsConnected(false);
+      disconnect(); // Cleanup resources on connection failure
+      alert("Erro ao conectar: Serviço indisponível ou erro de permissão. Tente novamente.");
     }
-  }, [systemInstruction, onDisconnect]);
-
-  const disconnect = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (scriptProcessorRef.current) {
-        scriptProcessorRef.current.disconnect();
-        scriptProcessorRef.current = null;
-    }
-    if (inputAudioContextRef.current) {
-      inputAudioContextRef.current.close();
-      inputAudioContextRef.current = null;
-    }
-    if (outputAudioContextRef.current) {
-      outputAudioContextRef.current.close();
-      outputAudioContextRef.current = null;
-    }
-    
-    setIsConnected(false);
-    setIsTalking(false);
-    setVolume(0);
-  }, []);
+  }, [systemInstruction, onDisconnect, disconnect]);
 
   const getTranscript = useCallback(() => {
     return transcriptRef.current;

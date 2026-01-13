@@ -1,4 +1,4 @@
-import { Scenario } from './types';
+import { Scenario, GenericText } from './types';
 
 const BASE_INSTRUCTION = `
 Atue como um simulador de pressão social realista.
@@ -40,6 +40,19 @@ export const SCENARIOS: Scenario[] = [
     Faça ele provar o valor dele.`,
   },
   {
+    id: 'date',
+    title: 'Primeiro Encontro',
+    description: 'Um encontro onde a outra pessoa parece desinteressada e checa o celular se você for chato.',
+    difficulty: 'medium',
+    icon: '🍷',
+    systemInstruction: `${BASE_INSTRUCTION}
+    CENÁRIO: Primeiro encontro (Blind Date).
+    Você é o(a) pretendente. Você é um pouco difícil de agradar e se entedia fácil.
+    Se o usuário falar algo clichê, dê um suspiro ou diga "nossa, que original".
+    Faça perguntas pessoais invasivas do nada.
+    Seja levemente sarcástico, mas flerte se ele se sair bem.`,
+  },
+  {
     id: 'team_meeting',
     title: 'Reunião de Equipe',
     description: 'Você precisa dar uma opinião impopular, mas seus colegas estão conversando paralelo e te cortando.',
@@ -76,4 +89,27 @@ export const SCENARIOS: Scenario[] = [
     Interrompa perguntando "Qual o ROI disso?", "Isso escala?".
     Faça o usuário ir direto ao ponto.`,
   },
+];
+
+export const GENERIC_TEXTS: GenericText[] = [
+  {
+    id: 'pitch',
+    title: 'Elevator Pitch (Profissional)',
+    content: 'Meu nome é Alex e desenvolvi uma solução que reduz em 40% o desperdício de energia em grandes indústrias usando sensores IoT. Nos últimos 6 meses, validamos o protótipo com 3 clientes pagantes e estamos buscando investimento seed para escalar a produção.'
+  },
+  {
+    id: 'about_me',
+    title: 'Sobre Mim (Pessoal)',
+    content: 'Eu sou uma pessoa muito curiosa. Desde criança, gostava de desmontar meus brinquedos para ver como funcionavam. Isso me levou à engenharia, mas minha paixão real é entender como a tecnologia pode impactar a vida das pessoas no dia a dia.'
+  },
+  {
+    id: 'story',
+    title: 'Contar uma História (Criativo)',
+    content: 'Era uma terça-feira chuvosa quando decidi que largaria tudo. O escritório estava cinza, o café frio, e o relatório na minha tela não fazia sentido algum. Levantei, peguei meu casaco e saí sem olhar para trás.'
+  },
+  {
+    id: 'dating',
+    title: 'Abertura de Encontro (Casual)',
+    content: 'Então, eu estava lendo seu perfil e vi que você gosta de viagens. Eu acabei de voltar de uma viagem meio maluca pro interior, onde o carro quebrou no meio do nada e tive que pegar carona com um caminhão de galinhas.'
+  }
 ];
