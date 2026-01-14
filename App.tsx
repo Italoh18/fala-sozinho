@@ -97,7 +97,8 @@ const App: React.FC = () => {
         const fallbackResult: FeedbackResult = {
           clarity: 'Pouco Clara',
           suggestion: 'Nenhuma fala detectada. Verifique seu microfone ou tente falar mais alto.',
-          score: 0
+          score: 0,
+          annotatedTranscript: []
         };
         setFeedbackResult(fallbackResult);
         setCurrentState(AppState.FEEDBACK);
@@ -110,17 +111,22 @@ const App: React.FC = () => {
         O usuário estava treinando: ${selectedScenario?.title}.
         ${readingText ? `O usuário estava tentando ler este texto: "${readingText}"` : ''}
         
-        TRANSCRIÇÃO:
+        TRANSCRIÇÃO (role 'user' é o usuário, 'model' é o simulador, 'system' são eventos):
         ${JSON.stringify(transcript)}
 
         TAREFA:
         1. Avalie a clareza da fala.
-        2. Dê uma nota de 1 a 10 para o desempenho geral (considerando confiança, clareza e reação às interrupções).
+        2. Dê uma nota de 1 a 10.
         3. Dê uma sugestão breve.
+        4. Gere um "annotatedTranscript": reconstrua o diálogo em ordem cronológica dividindo em blocos.
+           - Se o usuário falou de forma fluida, type="user_clear".
+           - Se o usuário gaguejou, hesitou muito ou foi confuso, type="user_unclear".
+           - Se foi uma fala do simulador ou uma interrupção, type="model".
+        Certifique-se de que a lista 'annotatedTranscript' conte a história completa da sessão.
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
@@ -137,9 +143,19 @@ const App: React.FC = () => {
               },
               suggestion: {
                 type: Type.STRING
+              },
+              annotatedTranscript: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    text: { type: Type.STRING },
+                    type: { type: Type.STRING, enum: ['user_clear', 'user_unclear', 'model'] }
+                  }
+                }
               }
             },
-            required: ['clarity', 'suggestion', 'score']
+            required: ['clarity', 'suggestion', 'score', 'annotatedTranscript']
           }
         }
       });
@@ -149,7 +165,8 @@ const App: React.FC = () => {
       const finalResult = result || {
         clarity: 'Pouco Clara',
         suggestion: 'Não foi possível gerar análise detalhada.',
-        score: 5
+        score: 5,
+        annotatedTranscript: []
       };
 
       setFeedbackResult(finalResult);
@@ -162,7 +179,8 @@ const App: React.FC = () => {
       const errorResult: FeedbackResult = {
         clarity: 'Pouco Clara',
         suggestion: 'Erro ao analisar áudio. Tente falar mais devagar.',
-        score: 0
+        score: 0,
+        annotatedTranscript: []
       };
       setFeedbackResult(errorResult);
     }
@@ -449,7 +467,7 @@ const App: React.FC = () => {
   );
 
   const renderFeedback = () => (
-    <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+    <div className="max-w-3xl mx-auto px-4 py-16 text-center">
       <div className="mb-8">
         <div className="inline-block p-4 rounded-full bg-green-500/10 mb-4">
           <span className="text-4xl">🏁</span>
@@ -474,25 +492,53 @@ const App: React.FC = () => {
 
         <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-4 pr-16">Análise da Fala</h3>
         
-        <div className="mb-6">
-          <p className="text-xs uppercase tracking-wider text-slate-400 mb-1">Clareza</p>
-          <div className="flex items-center gap-3">
-             <span className={`text-2xl font-bold ${
-               feedbackResult?.clarity === 'Muito Clara' ? 'text-green-400' : 
-               feedbackResult?.clarity === 'Clara' ? 'text-blue-400' : 'text-yellow-400'
-             }`}>
-               {feedbackResult?.clarity}
-             </span>
-             {feedbackResult?.clarity === 'Muito Clara' && <span>🌟</span>}
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div>
+             <p className="text-xs uppercase tracking-wider text-slate-400 mb-1">Clareza</p>
+             <div className="flex items-center gap-3">
+                <span className={`text-2xl font-bold ${
+                  feedbackResult?.clarity === 'Muito Clara' ? 'text-green-400' : 
+                  feedbackResult?.clarity === 'Clara' ? 'text-blue-400' : 'text-yellow-400'
+                }`}>
+                  {feedbackResult?.clarity}
+                </span>
+             </div>
           </div>
         </div>
 
-        <div>
-          <p className="text-xs uppercase tracking-wider text-slate-400 mb-1">Sugestão</p>
-          <p className="text-lg text-slate-200 leading-relaxed">
+        <div className="mb-8">
+          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">Sugestão Principal</p>
+          <p className="text-lg text-slate-200 leading-relaxed bg-slate-700/30 p-4 rounded-xl border border-slate-700/50">
             {feedbackResult?.suggestion}
           </p>
         </div>
+
+        {/* Visual Transcript */}
+        {feedbackResult?.annotatedTranscript && feedbackResult.annotatedTranscript.length > 0 && (
+          <div>
+            <p className="text-xs uppercase tracking-wider text-slate-400 mb-3">Resumo da Conversa</p>
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 flex flex-wrap content-start gap-1 max-h-96 overflow-y-auto custom-scrollbar leading-relaxed">
+              {feedbackResult.annotatedTranscript.map((item, idx) => (
+                <span 
+                  key={idx} 
+                  className={`
+                    px-1 rounded-sm
+                    ${item.type === 'user_clear' ? 'text-slate-300' : ''}
+                    ${item.type === 'user_unclear' ? 'text-yellow-400 bg-yellow-400/10 decoration-wavy underline decoration-yellow-500/50' : ''}
+                    ${item.type === 'model' ? 'text-red-400 font-bold bg-red-900/20 px-2 rounded-md mx-1' : ''}
+                  `}
+                >
+                  {item.text}
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-4 mt-2 text-[10px] uppercase tracking-wider text-slate-500 justify-center">
+               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-300"></span> Fluido</span>
+               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400"></span> Hesitante</span>
+               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span> Interrupção/Simulador</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">

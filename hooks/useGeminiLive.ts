@@ -22,7 +22,7 @@ export function useGeminiLive({ systemInstruction, onDisconnect }: UseGeminiLive
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
   
   // Transcript history for feedback
-  const transcriptRef = useRef<{role: 'user' | 'model', text: string}[]>([]);
+  const transcriptRef = useRef<{role: 'user' | 'model' | 'system', text: string}[]>([]);
 
   const disconnect = useCallback(() => {
     if (streamRef.current) {
@@ -63,7 +63,7 @@ export function useGeminiLive({ systemInstruction, onDisconnect }: UseGeminiLive
       streamRef.current = stream;
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
             console.log('Gemini Live Connected');
@@ -139,6 +139,8 @@ export function useGeminiLive({ systemInstruction, onDisconnect }: UseGeminiLive
 
             if (message.serverContent?.interrupted) {
               console.log('Model interrupted');
+              transcriptRef.current.push({ role: 'system', text: '[INTERRUPÇÃO DO SIMULADOR]' });
+              
               sourcesRef.current.forEach(src => {
                   try { src.stop(); } catch(e) {}
               });

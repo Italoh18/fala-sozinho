@@ -21,10 +21,16 @@ export interface AudioVisualizerProps {
   volume: number; // 0 to 1
 }
 
+export interface AnnotatedTranscriptItem {
+  text: string;
+  type: 'user_clear' | 'user_unclear' | 'model';
+}
+
 export interface FeedbackResult {
   clarity: 'Clara' | 'Pouco Clara' | 'Muito Clara';
   suggestion: string;
   score: number; // 1 to 10
+  annotatedTranscript: AnnotatedTranscriptItem[];
 }
 
 export type VoiceName = 'Puck' | 'Charon' | 'Kore' | 'Fenrir' | 'Zephyr';
