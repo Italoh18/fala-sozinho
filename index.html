@@ -6,7 +6,8 @@
     <title>Fala Sozinho</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -17,6 +18,13 @@
             },
             animation: {
               'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'float': 'float 3s ease-in-out infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-5px)' },
+              }
             }
           }
         }
@@ -34,12 +42,16 @@
     </script>
     <style>
       body {
-        background-color: #0f172a;
-        color: #e2e8f0;
+        background-color: #0f172a; /* Slate 900 */
+        color: #e2e8f0; /* Slate 200 */
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
+      
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
+        height: 8px;
       }
       ::-webkit-scrollbar-track {
         background: #1e293b;
@@ -51,6 +63,7 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #64748b;
       }
+
       .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
       }
