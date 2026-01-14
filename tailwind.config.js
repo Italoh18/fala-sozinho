@@ -1,2 +1,1 @@
-// Disabled to use CDN
-export default {}
+module.exports = {};
