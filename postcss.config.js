@@ -1,1 +1,4 @@
-export default {};
+// @ts-nocheck
+export default {
+  plugins: {},
+};
